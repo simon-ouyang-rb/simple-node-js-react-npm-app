@@ -1,26 +1,33 @@
+// Jenkinsfile
+
 pipeline {
-  agent {
-    label 'docker' 
-  }
-    stages {
-         stage('Docker node test') {
-              agent {
-                docker {
-                  // Set both label and image
-                  label 'docker'
-                  image 'node:7-alpine'
-                  args '--name docker-node -p 3000:3000' // list any args
-                }
-              }
-              steps {
-                // Steps run in node:7-alpine docker container on docker slave
-                sh 'node --version'
-              }
+  // "Top-level" agent is assigned to docker slaves via Jenkins pipeline configuration
+  agent none
+
+  stages {
+    stage('Docker node test') {
+      agent {
+        docker {
+          image 'node:7-alpine'
+          args '--name docker-node' // list any args
         }
-        stage('Build') {
-            steps {
-                sh 'npm install'
-            }
-        }
+      }
+      steps {
+        // Steps run in node:7-alpine docker container on docker slave
+        sh 'node --version'
+      }
     }
+
+    stage('Docker maven test') {
+      agent {
+        docker {
+          image 'maven:3-alpine'
+        }
+      }
+      steps {
+        // Steps run in maven:3-alpine docker container on docker slave
+        sh 'mvn --version'
+      }
+    }
+  }
 }
